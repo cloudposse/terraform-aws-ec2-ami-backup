@@ -44,76 +44,87 @@ EOF
 
 data "archive_file" "ami_backups_zip" {
   type        = "zip"
-  source_file = "lambdaAMIBackups.py"
-  output_path = "lambdaAMIBackups.zip"
+  source_file = "lambda_ami_backups.py"
+  output_path = "lambda_ami_backups.zip"
 }
 
-resource "aws_lambda_function" "lambdaAMIBackups" {
-  filename         = "lambdaAMIBackups.zip"
-  function_name    = "lambdaAMIBackups"
+
+resource "aws_lambda_function" "lambda_ami_backups" {
+  filename         = "lambda_ami_backups.zip"
+  function_name    = "lambda_ami_backups"
   description      = "Automatically backs up instances tagged with backup: true"
   role             = "${aws_iam_role.ami_backup_role.arn}"
   timeout          = 60
-  handler          = "lambdaAMIBackups.lambda_handler"
+  handler          = "lambda_ami_backups.lambda_handler"
   runtime          = "python2.7"
   source_code_hash = "${data.archive_file.ami_backups_zip.output_base64sha256}"
+  environment = {
+    variables = {
+      region = "${var.region}"
+      ami_owner = "${var.ami_owner}"
+    }
+  }
 }
 
-/*
-data "archive_file" "ami_janitor_zip" {
+data "archive_file" "ami_cleanups_zip" {
   type        = "zip"
-  source_file = "ami-janitor.py"
-  output_path = "ami-janitor.zip"
+  source_file = "lambda_ami_cleanups.py"
+  output_path = "lambda_ami_cleanups.zip"
 }
-*/
 
-resource "aws_lambda_function" "lambdaAMICleanup" {
-  filename         = "lambdaAMIBackups.zip"
-  function_name    = "lambdaAMICleanup"
+resource "aws_lambda_function" "lambda_ami_cleanups" {
+  filename         = "lambda_ami_cleanups.zip"
+  function_name    = "lambda_ami_cleanups"
   description      = "Cleans up old AMI backups"
   role             = "${aws_iam_role.ami_backup_role.arn}"
   timeout          = 60
-  handler          = "lambdaAMICleanup.lambda_handler"
+  handler          = "lambda_ami_cleanups.lambda_handler"
   runtime          = "python2.7"
-  source_code_hash = "${data.archive_file.ami_backups_zip.output_base64sha256}"
+  source_code_hash = "${data.archive_file.ami_cleanups_zip.output_base64sha256}"
+  environment = {
+    variables = {
+      region = "${var.region}"
+      ami_owner = "${var.ami_owner}"
+    }
+  }
 }
 
-resource "aws_cloudwatch_event_rule" "create-ami" {
-  name                = "create-ami"
+resource "aws_cloudwatch_event_rule" "create_ami" {
+  name                = "create_ami"
   description         = "Schedule for ami snapshot backups"
   schedule_expression = "${var.ami_backups_schedule}"
 }
 
-resource "aws_cloudwatch_event_rule" "delete-ami" {
-  name                = "delete-ami"
+resource "aws_cloudwatch_event_rule" "delete_ami" {
+  name                = "delete_ami"
   description         = "Schedule for ami snapshot cleanup"
-  schedule_expression = "${var.ami_janitor_schedule}"
+  schedule_expression = "${var.ami_cleanups_schedule}"
 }
 
 resource "aws_cloudwatch_event_target" "schedule_ami_backups" {
-  rule      = "${aws_cloudwatch_event_rule.create-ami.name}"
+  rule      = "${aws_cloudwatch_event_rule.create_ami.name}"
   target_id = "schedule_ami_backups"
-  arn       = "${aws_lambda_function.lambdaAMIBackups.arn}"
+  arn       = "${aws_lambda_function.lambda_ami_backups.arn}"
 }
 
 resource "aws_cloudwatch_event_target" "schedule_ami_cleanups" {
-  rule      = "${aws_cloudwatch_event_rule.delete-ami.name}"
-  target_id = "ami_janitor"
-  arn       = "${aws_lambda_function.lambdaAMICleanup.arn}"
+  rule      = "${aws_cloudwatch_event_rule.delete_ami.name}"
+  target_id = "schedule_ami_cleanups"
+  arn       = "${aws_lambda_function.lambda_ami_cleanups.arn}"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_backup" {
   statement_id  = "AllowExecutionFromCloudWatch_schedule_ami_backups"
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.lambdaAMIBackups.function_name}"
+  function_name = "${aws_lambda_function.lambda_ami_backups.function_name}"
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.create-ami.arn}"
+  source_arn    = "${aws_cloudwatch_event_rule.create_ami.arn}"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_cleanup" {
-  statement_id  = "AllowExecutionFromCloudWatch_ami_janitor"
+  statement_id  = "AllowExecutionFromCloudWatch_schedule_ami_cleanups"
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.lambdaAMICleanup.function_name}"
+  function_name = "${aws_lambda_function.lambda_ami_cleanups.function_name}"
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.delete-ami.arn}"
+  source_arn    = "${aws_cloudwatch_event_rule.delete_ami.arn}"
 }

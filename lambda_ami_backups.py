@@ -24,7 +24,7 @@ def lambda_handler(event, context):
     
     reservations = ec.describe_instances(
         Filters=[
-            {'Name': 'tag-key', 'Values': ['backup', 'Backup']},
+            {'Name': 'tag-key', 'Values': ['backup', 'Backup', 'Snapshot']},
         ]
     ).get(
         'Reservations', []
@@ -46,7 +46,7 @@ def lambda_handler(event, context):
                 int(t.get('Value')) for t in instance['Tags']
                 if t['Key'] == 'Retention'][0]
         except IndexError:
-            retention_days = 7
+            retention_days = 14
 
         #for dev in instance['BlockDeviceMappings']:
         #    if dev.get('Ebs', None) is None:
@@ -59,27 +59,27 @@ def lambda_handler(event, context):
             #    VolumeId=vol_id,
             #)
             
-            #create_image(instance_id, name, description=None, no_reboot=False, block_device_mapping=None, dry_run=False)
-            # DryRun, InstanceId, Name, Description, NoReboot, BlockDeviceMappings
-            create_time = datetime.datetime.now()
-            create_fmt = create_time.strftime('%Y-%m-%d--%H-%M-%S')
-        
-            AMIid = ec.create_image(InstanceId=instance['InstanceId'], Name="Lambda - " + instance['InstanceId'] + " from " + create_fmt, Description="Lambda created AMI of instance " + instance['InstanceId'] + " from " + create_fmt, NoReboot=True, DryRun=False)
+        #create_image(instance_id, name, description=None, no_reboot=False, block_device_mapping=None, dry_run=False)
+        # DryRun, InstanceId, Name, Description, NoReboot, BlockDeviceMappings
+        create_time = datetime.datetime.now()
+        create_fmt = create_time.strftime('%Y-%m-%d')
 
-            
-            pprint.pprint(instance)
-            #sys.exit()
-            #break
-        
-            #to_tag[retention_days].append(AMIid)
-            
-            to_tag[retention_days].append(AMIid['ImageId'])
-            
-            print "Retaining AMI %s of instance %s for %d days" % (
-                AMIid['ImageId'],
-                instance['InstanceId'],
-                retention_days,
-            )
+        AMIid = ec.create_image(InstanceId=instance['InstanceId'], Name="Lambda - " + instance['InstanceId'] + " from " + create_fmt, Description="Lambda created AMI of instance " + instance['InstanceId'] + " from " + create_fmt, NoReboot=True, DryRun=False)
+
+
+        pprint.pprint(instance)
+        #sys.exit()
+        #break
+
+        #to_tag[retention_days].append(AMIid)
+
+        to_tag[retention_days].append(AMIid['ImageId'])
+
+        print "Retaining AMI %s of instance %s for %d days" % (
+            AMIid['ImageId'],
+            instance['InstanceId'],
+            retention_days,
+        )
 
     print to_tag.keys()
     

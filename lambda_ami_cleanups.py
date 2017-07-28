@@ -13,17 +13,18 @@ import boto3
 import collections
 import datetime
 import time
+import os
 import sys
 
-ec = boto3.client('ec2', 'us-east-1')
-ec2 = boto3.resource('ec2', 'us-east-1')
-images = ec2.images.filter(Owners=["xxxxxx"])
+ec = boto3.client('ec2', os.environ['region'])
+ec2 = boto3.resource('ec2', os.environ['region'])
+images = ec2.images.filter(Owners=[os.environ['ami_owner']])
 
 def lambda_handler(event, context):
 
     reservations = ec.describe_instances(
         Filters=[
-            {'Name': 'tag-key', 'Values': ['backup', 'Backup']},
+            {'Name': 'tag-key', 'Values': ['backup', 'Backup', 'Snapshot']},
         ]
     ).get(
         'Reservations', []
@@ -97,7 +98,7 @@ def lambda_handler(event, context):
 
     if backupSuccess == True:
 
-        snapshots = ec.describe_snapshots(MaxResults=1000, OwnerIds=['xxxxx'])['Snapshots']
+        snapshots = ec.describe_snapshots(MaxResults=1000, OwnerIds=[os.environ['ami_owner']])['Snapshots']
 
         # loop through list of image IDs
         for image in imagesList:

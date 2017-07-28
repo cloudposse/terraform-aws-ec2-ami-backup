@@ -4,6 +4,15 @@ variable "ami_backups_schedule" {
   default = "cron(00 19 * * ? *)"
 }
 
-variable "ami_janitor_schedule" {
+variable "ami_cleanups_schedule" {
   default = "cron(05 19 * * ? *)"
 }
+
+variable "ami_owner" {
+  default = "XXXXXXX"
+}
+
+variable "region" {
+  default = "us-east-1"
+}
+

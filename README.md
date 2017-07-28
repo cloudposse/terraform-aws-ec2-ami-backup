@@ -10,14 +10,16 @@ the code at
 
 Include this repository as a module in your existing terraform code:
 
+
 ```
 module "lambda_ami_backup" {
   source = "github.com/cloudposse/tf_lambda_ami_backup"
   # Setting these variables is optional
-  # ebs_snapshot_backups_schedule = "cron(00 19 * * ? *)"
-  # ebs_snapshot_janitor_schedule = "cron(05 19 * * ? *)"
+  # ami_backups_schedule = "cron(00 19 * * ? *)"
+  # ami_cleanups_schedule = "cron(05 19 * * ? *)"
 }
 ```
+
 
 ### Configuring your instances to be backed up
 
