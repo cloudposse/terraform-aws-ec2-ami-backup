@@ -9,10 +9,25 @@ variable "ami_cleanups_schedule" {
 }
 
 variable "ami_owner" {
-  default = "XXXXXXX"
+  default = ""
 }
 
 variable "region" {
   default = "us-east-1"
 }
 
+variable "retention" {
+  default = ""
+}
+
+variable "name" {
+  default = ""
+}
+
+variable "namespace" {
+  default = ""
+}
+
+variable "stage" {
+  default = ""
+}

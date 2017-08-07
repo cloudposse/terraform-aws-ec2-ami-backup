@@ -15,15 +15,18 @@ Include this repository as a module in your existing terraform code:
 module "lambda_ami_backup" {
   source = "github.com/cloudposse/tf_lambda_ami_backup"
   # Setting these variables is optional
-  # ami_backups_schedule = "cron(00 19 * * ? *)"
-  # ami_cleanups_schedule = "cron(05 19 * * ? *)"
+  ami_backups_schedule = "cron(00 19 * * ? *)"
+  ami_cleanups_schedule = "cron(05 19 * * ? *)"
+  name = "${var.name}"
+  stage = "${var.stage}"
+  namespace = "${var.namespace}"
 }
 ```
 
 
 ### Configuring your instances to be backed up
 
-Tag any instances you want to be backed up with `Backup_AMI = true`.
+Tag any instances you want to be backed up with `Snapshot = true`.
 
 By default, old backups will be removed after 7 days, to keep them longer, set
 another tag: `Retention = 14`, where 14 is the number of days you want to keep

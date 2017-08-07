@@ -1,5 +1,5 @@
-resource "aws_iam_role" "ami_backup_role" {
-  name = "ami_backup_role"
+resource "aws_iam_role" "ami_backup" {
+  name = "${module.tf_label.id}"
 
   assume_role_policy = <<EOF
 {
@@ -18,9 +18,9 @@ resource "aws_iam_role" "ami_backup_role" {
 EOF
 }
 
-resource "aws_iam_role_policy" "ami_backup_policy" {
-  name = "ami_backup_policy"
-  role = "${aws_iam_role.ami_backup_role.id}"
+resource "aws_iam_role_policy" "ami_backup" {
+  name = "${module.tf_label.id}"
+  role = "${aws_iam_role.ami_backup.id}"
 
   policy = <<EOF
 {
@@ -44,16 +44,15 @@ EOF
 
 data "archive_file" "ami_backups_zip" {
   type        = "zip"
-  source_file = "lambda_ami_backups.py"
-  output_path = "lambda_ami_backups.zip"
+  source_file = "${path.module}/lambda_ami_backups.py"
+  output_path = "${path.module}/lambda_ami_backups.zip"
 }
 
-
 resource "aws_lambda_function" "lambda_ami_backups" {
-  filename         = "lambda_ami_backups.zip"
-  function_name    = "lambda_ami_backups"
+  filename         = "${path.module}/lambda_ami_backups.zip"
+  function_name    = "${module.tf_label.id}_backups"
   description      = "Automatically backs up instances tagged with backup: true"
-  role             = "${aws_iam_role.ami_backup_role.arn}"
+  role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "lambda_ami_backups.lambda_handler"
   runtime          = "python2.7"
@@ -68,15 +67,15 @@ resource "aws_lambda_function" "lambda_ami_backups" {
 
 data "archive_file" "ami_cleanups_zip" {
   type        = "zip"
-  source_file = "lambda_ami_cleanups.py"
-  output_path = "lambda_ami_cleanups.zip"
+  source_file = "${path.module}/lambda_ami_cleanups.py"
+  output_path = "${path.module}/lambda_ami_cleanups.zip"
 }
 
 resource "aws_lambda_function" "lambda_ami_cleanups" {
-  filename         = "lambda_ami_cleanups.zip"
-  function_name    = "lambda_ami_cleanups"
+  filename         = "${path.module}/lambda_ami_cleanups.zip"
+  function_name    = "${module.tf_label.id}_cleanups"
   description      = "Cleans up old AMI backups"
-  role             = "${aws_iam_role.ami_backup_role.arn}"
+  role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "lambda_ami_cleanups.lambda_handler"
   runtime          = "python2.7"
@@ -90,13 +89,13 @@ resource "aws_lambda_function" "lambda_ami_cleanups" {
 }
 
 resource "aws_cloudwatch_event_rule" "create_ami" {
-  name                = "create_ami"
+  name                = "${module.tf_label.id}_create_ami"
   description         = "Schedule for ami snapshot backups"
   schedule_expression = "${var.ami_backups_schedule}"
 }
 
 resource "aws_cloudwatch_event_rule" "delete_ami" {
-  name                = "delete_ami"
+  name                = "${module.tf_label.id}_delete_ami"
   description         = "Schedule for ami snapshot cleanup"
   schedule_expression = "${var.ami_cleanups_schedule}"
 }

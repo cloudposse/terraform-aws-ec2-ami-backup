@@ -46,7 +46,7 @@ def lambda_handler(event, context):
                 int(t.get('Value')) for t in instance['Tags']
                 if t['Key'] == 'Retention'][0]
         except IndexError:
-            retention_days = 14
+            retention_days = 7
 
         #for dev in instance['BlockDeviceMappings']:
         #    if dev.get('Ebs', None) is None:
