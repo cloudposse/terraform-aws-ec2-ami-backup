@@ -1,10 +1,10 @@
 # See https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html
 # for how to write schedule expressions
-variable "ami_backups_schedule" {
+variable "backups_schedule" {
   default = "cron(00 19 * * ? *)"
 }
 
-variable "ami_cleanups_schedule" {
+variable "cleanups_schedule" {
   default = "cron(05 19 * * ? *)"
 }
 
