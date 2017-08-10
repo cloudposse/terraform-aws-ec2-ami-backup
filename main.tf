@@ -50,8 +50,8 @@ data "archive_file" "ami_backups_zip" {
 
 data "archive_file" "ami_cleanups_zip" {
   type        = "zip"
-  source_file = "${path.module}/ami_backup.py"
-  output_path = "${path.module}/ami_backup.zip"
+  source_file = "${path.module}/ami_cleanup.py"
+  output_path = "${path.module}/ami_cleanup.zip"
 }
 
 module "label" {
@@ -87,7 +87,7 @@ resource "aws_iam_role_policy" "ami_backup" {
 }
 
 resource "aws_lambda_function" "ami_backup" {
-  filename         = "${path.module}/lambda_ami_backups.zip"
+  filename         = "${path.module}/ami_backup.zip"
   function_name    = "${module.label_backup.id}"
   description      = "Automatically backup instances tagged with 'backup: true'"
   role             = "${aws_iam_role.ami_backup.arn}"
@@ -105,7 +105,7 @@ resource "aws_lambda_function" "ami_backup" {
 }
 
 resource "aws_lambda_function" "ami_cleanup" {
-  filename         = "${path.module}/lambda_ami_cleanups.zip"
+  filename         = "${path.module}/ami_cleanup.zip"
   function_name    = "${module.label_cleanup.id}"
   description      = "Cleanup old AMI backups"
   role             = "${aws_iam_role.ami_backup.arn}"
