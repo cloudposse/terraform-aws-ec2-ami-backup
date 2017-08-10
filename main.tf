@@ -29,11 +29,7 @@ data "aws_iam_policy_document" "ami_backup" {
 
   statement {
     actions = [
-      "ec2:CreateSnapshot",
-      "ec2:DeleteSnapshot",
-      "ec2:CreateTags",
-      "ec2:ModifySnapshotAttribute",
-      "ec2:ResetSnapshotAttribute"
+      "ec2:DescribeInstances"
     ]
 
     resources = [
