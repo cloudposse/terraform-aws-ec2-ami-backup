@@ -1,4 +1,4 @@
-all: ebs-snapshot-janitor.zip schedule-ebs-snapshot-backups.zip
+all: lambda_ami_backups.zip lambda_ami_cleanups.zip
 
 %.zip: %.py
 	zip $@ $<

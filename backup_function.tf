@@ -1,127 +1,138 @@
-resource "aws_iam_role" "ebs_backup_role" {
-  name = "ebs_backup_role"
+data "aws_iam_policy_document" "default" {
+  statement {
+    sid = ""
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
+    principals {
+      type = "Service"
+
+      identifiers = [
+        "lambda.amazonaws.com",
+      ]
     }
-  ]
-}
-EOF
-}
 
-resource "aws_iam_role_policy" "ebs_backup_policy" {
-  name = "ebs_backup_policy"
-  role = "${aws_iam_role.ebs_backup_role.id}"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": ["logs:*"],
-            "Resource": "arn:aws:logs:*:*:*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "ec2:Describe*",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "ec2:CreateSnapshot",
-                "ec2:DeleteSnapshot",
-                "ec2:CreateTags",
-                "ec2:ModifySnapshotAttribute",
-                "ec2:ResetSnapshotAttribute"
-            ],
-            "Resource": ["*"]
-        }
+    actions = [
+      "sts:AssumeRole",
     ]
-}
-EOF
+  }
 }
 
-data "archive_file" "schedule_ebs_snapshot_backups_zip" {
+data "aws_iam_policy_document" "ami_backup" {
+  statement {
+    actions = [
+      "logs:*",
+    ]
+
+    resources = [
+      "arn:aws:logs:*:*:*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "ec2:*",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_role" "ami_backup" {
+  name               = "${module.tf_label.id}"
+  assume_role_policy = "${data.aws_iam_policy_document.default.json}"
+}
+
+resource "aws_iam_role_policy" "ami_backup" {
+  name   = "${module.tf_label.id}"
+  role   = "${aws_iam_role.ami_backup.id}"
+  policy = "${data.aws_iam_policy_document.ami_backup.json}"
+}
+
+data "archive_file" "ami_backups_zip" {
   type        = "zip"
-  source_file = "${path.module}/schedule-ebs-snapshot-backups.py"
-  output_path = "${path.module}/schedule-ebs-snapshot-backups.zip"
+  source_file = "${path.module}/lambda_ami_backups.py"
+  output_path = "${path.module}/lambda_ami_backups.zip"
 }
 
-resource "aws_lambda_function" "schedule_ebs_snapshot_backups" {
-  filename         = "${path.module}/schedule-ebs-snapshot-backups.zip"
-  function_name    = "schedule_ebs_snapshot_backups"
+resource "aws_lambda_function" "lambda_ami_backups" {
+  filename         = "${path.module}/lambda_ami_backups.zip"
+  function_name    = "${module.tf_label.id}_backups"
   description      = "Automatically backs up instances tagged with backup: true"
-  role             = "${aws_iam_role.ebs_backup_role.arn}"
+  role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
-  handler          = "schedule-ebs-snapshot-backups.lambda_handler"
+  handler          = "lambda_ami_backups.lambda_handler"
   runtime          = "python2.7"
-  source_code_hash = "${data.archive_file.schedule_ebs_snapshot_backups_zip.output_base64sha256}"
+  source_code_hash = "${data.archive_file.ami_backups_zip.output_base64sha256}"
+
+  environment = {
+    variables = {
+      region    = "${var.region}"
+      ami_owner = "${var.ami_owner}"
+    }
+  }
 }
 
-data "archive_file" "ebs_snapshot_janitor_zip" {
+data "archive_file" "ami_cleanups_zip" {
   type        = "zip"
-  source_file = "${path.module}/ebs-snapshot-janitor.py"
-  output_path = "${path.module}/ebs-snapshot-janitor.zip"
+  source_file = "${path.module}/lambda_ami_cleanups.py"
+  output_path = "${path.module}/lambda_ami_cleanups.zip"
 }
 
-resource "aws_lambda_function" "ebs_snapshot_janitor" {
-  filename         = "${path.module}/ebs-snapshot-janitor.zip"
-  function_name    = "ebs_snapshot_janitor"
-  description      = "Cleans up old EBS backups"
-  role             = "${aws_iam_role.ebs_backup_role.arn}"
+resource "aws_lambda_function" "lambda_ami_cleanups" {
+  filename         = "${path.module}/lambda_ami_cleanups.zip"
+  function_name    = "${module.tf_label.id}_cleanups"
+  description      = "Cleans up old AMI backups"
+  role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
-  handler          = "ebs-snapshot-janitor.lambda_handler"
+  handler          = "lambda_ami_cleanups.lambda_handler"
   runtime          = "python2.7"
-  source_code_hash = "${data.archive_file.ebs_snapshot_janitor_zip.output_base64sha256}"
+  source_code_hash = "${data.archive_file.ami_cleanups_zip.output_base64sha256}"
+
+  environment = {
+    variables = {
+      region    = "${var.region}"
+      ami_owner = "${var.ami_owner}"
+    }
+  }
 }
 
-resource "aws_cloudwatch_event_rule" "schedule_ebs_snapshot_backups" {
-  name                = "schedule_ebs_snapshot_backups"
-  description         = "Schedule for ebs snapshot backups"
-  schedule_expression = "${var.ebs_snapshot_backups_schedule}"
+resource "aws_cloudwatch_event_rule" "create_ami" {
+  name                = "${module.tf_label.id}_create_ami"
+  description         = "Schedule for ami snapshot backups"
+  schedule_expression = "${var.backup_schedule}"
 }
 
-resource "aws_cloudwatch_event_rule" "schedule_ebs_snapshot_janitor" {
-  name                = "schedule_ebs_snapshot_janitor"
-  description         = "Schedule for ebs snapshot janitor"
-  schedule_expression = "${var.ebs_snapshot_janitor_schedule}"
+resource "aws_cloudwatch_event_rule" "delete_ami" {
+  name                = "${module.tf_label.id}_delete_ami"
+  description         = "Schedule for ami snapshot cleanup"
+  schedule_expression = "${var.cleanup_schedule}"
 }
 
-resource "aws_cloudwatch_event_target" "schedule_ebs_snapshot_backups" {
-  rule      = "${aws_cloudwatch_event_rule.schedule_ebs_snapshot_backups.name}"
-  target_id = "schedule_ebs_snapshot_backups"
-  arn       = "${aws_lambda_function.schedule_ebs_snapshot_backups.arn}"
+resource "aws_cloudwatch_event_target" "schedule_ami_backups" {
+  rule      = "${aws_cloudwatch_event_rule.create_ami.name}"
+  target_id = "schedule_ami_backups"
+  arn       = "${aws_lambda_function.lambda_ami_backups.arn}"
 }
 
-resource "aws_cloudwatch_event_target" "schedule_ebs_snapshot_janitor" {
-  rule      = "${aws_cloudwatch_event_rule.schedule_ebs_snapshot_janitor.name}"
-  target_id = "ebs_snapshot_janitor"
-  arn       = "${aws_lambda_function.ebs_snapshot_janitor.arn}"
+resource "aws_cloudwatch_event_target" "schedule_ami_cleanups" {
+  rule      = "${aws_cloudwatch_event_rule.delete_ami.name}"
+  target_id = "schedule_ami_cleanups"
+  arn       = "${aws_lambda_function.lambda_ami_cleanups.arn}"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_backup" {
-  statement_id  = "AllowExecutionFromCloudWatch_schedule_ebs_snapshot_backups"
+  statement_id  = "AllowExecutionFromCloudWatch_schedule_ami_backups"
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.schedule_ebs_snapshot_backups.function_name}"
+  function_name = "${aws_lambda_function.lambda_ami_backups.function_name}"
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.schedule_ebs_snapshot_backups.arn}"
+  source_arn    = "${aws_cloudwatch_event_rule.create_ami.arn}"
 }
 
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_janitor" {
-  statement_id  = "AllowExecutionFromCloudWatch_ebs_snapshot_janitor"
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_cleanup" {
+  statement_id  = "AllowExecutionFromCloudWatch_schedule_ami_cleanups"
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.ebs_snapshot_janitor.function_name}"
+  function_name = "${aws_lambda_function.lambda_ami_cleanups.function_name}"
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.schedule_ebs_snapshot_janitor.arn}"
+  source_arn    = "${aws_cloudwatch_event_rule.delete_ami.arn}"
 }
