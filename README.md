@@ -15,8 +15,8 @@ Include this repository as a module in your existing terraform code:
 module "lambda_ami_backup" {
   source = "git::https://github.com/cloudposse/tf_lambda_ami_backup.git?ref=master"
 
-  backups_schedule  = "cron(00 19 * * ? *)"
-  cleanups_schedule = "cron(05 19 * * ? *)"
+  backup_schedule   = "cron(00 19 * * ? *)"
+  cleanup_schedule  = "cron(05 19 * * ? *)"
   name              = "${var.name}"
   stage             = "${var.stage}"
   namespace         = "${var.namespace}"

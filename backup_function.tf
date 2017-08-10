@@ -100,13 +100,13 @@ resource "aws_lambda_function" "lambda_ami_cleanups" {
 resource "aws_cloudwatch_event_rule" "create_ami" {
   name                = "${module.tf_label.id}_create_ami"
   description         = "Schedule for ami snapshot backups"
-  schedule_expression = "${var.backups_schedule}"
+  schedule_expression = "${var.backup_schedule}"
 }
 
 resource "aws_cloudwatch_event_rule" "delete_ami" {
   name                = "${module.tf_label.id}_delete_ami"
   description         = "Schedule for ami snapshot cleanup"
-  schedule_expression = "${var.cleanups_schedule}"
+  schedule_expression = "${var.cleanup_schedule}"
 }
 
 resource "aws_cloudwatch_event_target" "schedule_ami_backups" {
