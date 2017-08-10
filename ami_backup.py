@@ -62,7 +62,7 @@ def lambda_handler(event, context):
         #create_image(instance_id, name, description=None, no_reboot=False, block_device_mapping=None, dry_run=False)
         # DryRun, InstanceId, Name, Description, NoReboot, BlockDeviceMappings
         create_time = datetime.datetime.now()
-        create_fmt = create_time.strftime('%Y-%m-%d')
+        create_fmt = create_time.strftime('%Y-%m-%d-%H-%M-%S')
 
         AMIid = ec.create_image(InstanceId=instance['InstanceId'], Name="Lambda - " + instance['InstanceId'] + " from " + create_fmt, Description="Lambda created AMI of instance " + instance['InstanceId'] + " from " + create_fmt, NoReboot=True, DryRun=False)
 
