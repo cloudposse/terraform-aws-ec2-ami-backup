@@ -13,7 +13,7 @@ variable "ami_owner" {
 }
 
 variable "region" {
-  default = "us-east-1"
+  default = ""
 }
 
 variable "retention" {
