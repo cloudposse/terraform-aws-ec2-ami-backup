@@ -29,7 +29,11 @@ data "aws_iam_policy_document" "ami_backup" {
 
   statement {
     actions = [
-      "ec2:*",
+      "ec2:CreateSnapshot",
+      "ec2:DeleteSnapshot",
+      "ec2:CreateTags",
+      "ec2:ModifySnapshotAttribute",
+      "ec2:ResetSnapshotAttribute"
     ]
 
     resources = [
@@ -40,14 +44,14 @@ data "aws_iam_policy_document" "ami_backup" {
 
 data "archive_file" "ami_backups_zip" {
   type        = "zip"
-  source_file = "${path.module}/lambda_ami_backups.py"
-  output_path = "${path.module}/lambda_ami_backups.zip"
+  source_file = "${path.module}/ami_backup.py"
+  output_path = "${path.module}/ami_backup.zip"
 }
 
 data "archive_file" "ami_cleanups_zip" {
   type        = "zip"
-  source_file = "${path.module}/lambda_ami_cleanups.py"
-  output_path = "${path.module}/lambda_ami_cleanups.zip"
+  source_file = "${path.module}/ami_backup.py"
+  output_path = "${path.module}/ami_backup.zip"
 }
 
 module "label" {
@@ -85,7 +89,7 @@ resource "aws_iam_role_policy" "ami_backup" {
 resource "aws_lambda_function" "ami_backup" {
   filename         = "${path.module}/lambda_ami_backups.zip"
   function_name    = "${module.label_backup.id}"
-  description      = "Automatically backs up instances tagged with backup: true"
+  description      = "Automatically backup instances tagged with 'backup: true'"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "lambda_ami_backups.lambda_handler"
@@ -103,7 +107,7 @@ resource "aws_lambda_function" "ami_backup" {
 resource "aws_lambda_function" "ami_cleanup" {
   filename         = "${path.module}/lambda_ami_cleanups.zip"
   function_name    = "${module.label_cleanup.id}"
-  description      = "Cleans up old AMI backups"
+  description      = "Cleanup old AMI backups"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "lambda_ami_cleanups.lambda_handler"
@@ -120,25 +124,25 @@ resource "aws_lambda_function" "ami_cleanup" {
 
 resource "aws_cloudwatch_event_rule" "ami_backup" {
   name                = "${module.label_backup.id}"
-  description         = "Schedule for ami snapshot backups"
+  description         = "Schedule for AMI snapshot backups"
   schedule_expression = "${var.backup_schedule}"
 }
 
 resource "aws_cloudwatch_event_rule" "ami_cleanup" {
   name                = "${module.label_cleanup.id}"
-  description         = "Schedule for ami snapshot cleanup"
+  description         = "Schedule for AMI snapshot cleanup"
   schedule_expression = "${var.cleanup_schedule}"
 }
 
 resource "aws_cloudwatch_event_target" "ami_backup" {
   rule      = "${aws_cloudwatch_event_rule.ami_backup.name}"
-  target_id = "schedule_ami_backups"
+  target_id = "${module.label_backup.id}"
   arn       = "${aws_lambda_function.ami_backup.arn}"
 }
 
 resource "aws_cloudwatch_event_target" "ami_cleanup" {
   rule      = "${aws_cloudwatch_event_rule.ami_cleanup.name}"
-  target_id = "schedule_ami_cleanups"
+  target_id = "${module.label_cleanup.id}"
   arn       = "${aws_lambda_function.ami_cleanup.arn}"
 }
 
