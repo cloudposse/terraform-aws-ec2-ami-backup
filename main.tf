@@ -42,13 +42,13 @@ data "aws_iam_policy_document" "ami_backup" {
   }
 }
 
-data "archive_file" "ami_backups_zip" {
+data "archive_file" "ami_backup" {
   type        = "zip"
   source_file = "${path.module}/ami_backup.py"
   output_path = "${path.module}/ami_backup.zip"
 }
 
-data "archive_file" "ami_cleanups_zip" {
+data "archive_file" "ami_cleanup" {
   type        = "zip"
   source_file = "${path.module}/ami_cleanup.py"
   output_path = "${path.module}/ami_cleanup.zip"
@@ -92,9 +92,9 @@ resource "aws_lambda_function" "ami_backup" {
   description      = "Automatically backup instances tagged with 'backup: true'"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
-  handler          = "lambda_ami_backups.lambda_handler"
+  handler          = "ami_backup.lambda_handler"
   runtime          = "python2.7"
-  source_code_hash = "${data.archive_file.ami_backups_zip.output_base64sha256}"
+  source_code_hash = "${data.archive_file.ami_backup.output_base64sha256}"
 
   environment = {
     variables = {
@@ -110,9 +110,9 @@ resource "aws_lambda_function" "ami_cleanup" {
   description      = "Cleanup old AMI backups"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
-  handler          = "lambda_ami_cleanups.lambda_handler"
+  handler          = "ami_cleanup.lambda_handler"
   runtime          = "python2.7"
-  source_code_hash = "${data.archive_file.ami_cleanups_zip.output_base64sha256}"
+  source_code_hash = "${data.archive_file.ami_cleanup.output_base64sha256}"
 
   environment = {
     variables = {
