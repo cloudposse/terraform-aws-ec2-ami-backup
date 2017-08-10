@@ -87,7 +87,7 @@ resource "aws_iam_role_policy" "ami_backup" {
 resource "aws_lambda_function" "ami_backup" {
   filename         = "${path.module}/ami_backup.zip"
   function_name    = "${module.label_backup.id}"
-  description      = "Automatically backup instances tagged with 'backup: true'"
+  description      = "Automatically backup instances tagged with 'Snapshot: true'"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "ami_backup.lambda_handler"
