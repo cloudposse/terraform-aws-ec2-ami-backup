@@ -29,7 +29,8 @@ data "aws_iam_policy_document" "ami_backup" {
 
   statement {
     actions = [
-      "ec2:DescribeInstances"
+      "ec2:DescribeInstances",
+      "ec2:CreateImage"
     ]
 
     resources = [
