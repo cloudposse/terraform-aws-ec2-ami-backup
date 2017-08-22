@@ -31,7 +31,9 @@ data "aws_iam_policy_document" "ami_backup" {
     actions = [
       "ec2:DescribeInstances",
       "ec2:CreateImage",
-      "ec2:CreateTags"
+      "ec2:DescribeImages",
+      "ec2:DescribeSnapshots",
+      "ec2:CreateTags",
     ]
 
     resources = [
@@ -87,7 +89,7 @@ resource "aws_iam_role_policy" "ami_backup" {
 resource "aws_lambda_function" "ami_backup" {
   filename         = "${path.module}/ami_backup.zip"
   function_name    = "${module.label_backup.id}"
-  description      = "Automatically backup instances tagged with 'Snapshot: true'"
+  description      = "Automatically backup EC2 instance ${var.instance_id} (create AMI)"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "ami_backup.lambda_handler"
@@ -96,8 +98,11 @@ resource "aws_lambda_function" "ami_backup" {
 
   environment = {
     variables = {
-      region    = "${var.region}"
-      ami_owner = "${var.ami_owner}"
+      region      = "${var.region}"
+      ami_owner   = "${var.ami_owner}"
+      instance_id = "${var.instance_id}"
+      retention   = "${var.retention_days}"
+      label_id    = "${module.label.id}"
     }
   }
 }
@@ -114,8 +119,9 @@ resource "aws_lambda_function" "ami_cleanup" {
 
   environment = {
     variables = {
-      region    = "${var.region}"
-      ami_owner = "${var.ami_owner}"
+      region      = "${var.region}"
+      ami_owner   = "${var.ami_owner}"
+      label_id    = "${module.label.id}"
     }
   }
 }
