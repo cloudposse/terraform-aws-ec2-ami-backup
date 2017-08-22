@@ -22,8 +22,8 @@ label_id = os.environ['label_id']
 
 def lambda_handler(event, context):
     try:
-        retention_days = os.environ['retention_days']
-    except:
+        retention_days = int(os.environ['retention_days'])
+    except ValueError:
         retention_days = 14
     create_time = datetime.datetime.now()
     create_fmt = create_time.strftime('%Y-%m-%d')

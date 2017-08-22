@@ -12,12 +12,10 @@ the code at
 
 Include this repository as a module in your existing terraform code:
 
-Notes:
-* `ami_owner` is an AWS account id.
 
 ```
 module "lambda_ami_backup" {
-  source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=master"
+  source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=tags/0.1.0"
 
   name              = "${var.name}"
   stage             = "${var.stage}"
