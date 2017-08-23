@@ -7,8 +7,17 @@
 # and reference the AMIs of that instance. We check that the latest daily backup
 # succeeded then we store every image that's reached its DeleteOn tag's date for
 # deletion. We then loop through the AMIs, deregister them and remove all the
-# snapshots associated with that AMI.
+# snapshots associated withg that AMI.
 
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 import boto3
 import collections
 import datetime
@@ -20,23 +29,23 @@ ec = boto3.client('ec2', os.environ['region'])
 ec2 = boto3.resource('ec2', os.environ['region'])
 images = ec2.images.filter(Owners=[os.environ['ami_owner']])
 
+
 def lambda_handler(event, context):
-
-    reservations = ec.describe_instances(
-        Filters=[
-            {'Name': 'tag-key', 'Values': ['backup', 'Backup', 'Snapshot']},
-        ]
-    ).get(
-        'Reservations', []
-    )
-
-    instances = sum(
-        [
-            [i for i in r['Instances']]
-            for r in reservations
-        ], [])
-
-    print "Found %d instances that need evaluated" % len(instances)
+    # reservations = ec.describe_instances(
+    #     Filters=[
+    #         {'Name': 'tag-key', 'Values': ['ami_delete_on', 'Backup', 'Snapshot']},
+    #     ]
+    # ).get(
+    #     'Reservations', []
+    # )
+    #
+    # instances = sum(
+    #     [
+    #         [i for i in r['Instances']]
+    #         for r in reservations
+    #     ], [])
+    #
+    # print "Found %d instances that need evaluated" % len(instances)
 
     to_tag = collections.defaultdict(list)
 
@@ -50,7 +59,7 @@ def lambda_handler(event, context):
 
     # Loop through all of our instances with a tag named "Backup"
     for instance in instances:
-	imagecount = 0
+        imagecount = 0
 
         # Loop through each image of our current instance
         for image in images:
@@ -62,13 +71,13 @@ def lambda_handler(event, context):
                 # print "FOUND IMAGE " + image.id + " FOR INSTANCE " + instance['InstanceId']
 
                 # Count this image's occcurance
-	        imagecount = imagecount + 1
+                imagecount = imagecount + 1
 
                 try:
                     if image.tags is not None:
                         deletion_date = [
                             t.get('Value') for t in image.tags
-                            if t['Key'] == 'DeleteOn'][0]
+                            if t['Key'] == 'ami_delete_on'][0]
                         delete_date = time.strptime(deletion_date, "%m-%d-%Y")
                 except IndexError:
                     deletion_date = False
@@ -87,14 +96,14 @@ def lambda_handler(event, context):
                 if image.name.endswith(date_fmt):
                     # Our latest backup from our other Lambda Function succeeded
                     backupSuccess = True
-                    print "Latest backup from " + date_fmt + " was a success"
+                    print("Latest backup from " + date_fmt + " was a success")
 
-        print "instance " + instance['InstanceId'] + " has " + str(imagecount) + " AMIs"
+        print("instance " + instance['InstanceId'] + " has " + str(imagecount) + " AMIs")
 
-    print "============="
+    print("=============")
 
-    print "About to process the following AMIs:"
-    print imagesList
+    print("About to process the following AMIs:")
+    print(imagesList)
 
     if backupSuccess == True:
 
@@ -102,7 +111,7 @@ def lambda_handler(event, context):
 
         # loop through list of image IDs
         for image in imagesList:
-            print "deregistering image %s" % image
+            print("deregistering image %s" % image)
             amiResponse = ec.deregister_image(
                 DryRun=False,
                 ImageId=image,
@@ -111,8 +120,8 @@ def lambda_handler(event, context):
             for snapshot in snapshots:
                 if snapshot['Description'].find(image) > 0:
                     snap = ec.delete_snapshot(SnapshotId=snapshot['SnapshotId'])
-                    print "Deleting snapshot " + snapshot['SnapshotId']
-                    print "-------------"
+                    print("Deleting snapshot " + snapshot['SnapshotId'])
+                    print("-------------")
 
     else:
-        print "No current backup found. Termination suspended."
+        print("No current backup found. Termination suspended.")

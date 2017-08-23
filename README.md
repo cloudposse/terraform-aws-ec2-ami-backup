@@ -12,18 +12,18 @@ the code at
 
 Include this repository as a module in your existing terraform code:
 
-Notes:
-* `ami_owner` is an AWS account id.
 
 ```
 module "lambda_ami_backup" {
-  source = "git::https://github.com/cloudposse/tf_lambda_ami_backup.git?ref=master"
+  source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=tags/0.1.0"
 
   name              = "${var.name}"
   stage             = "${var.stage}"
   namespace         = "${var.namespace}"
   region            = "${var.region}"
   ami_owner         = "${var.ami_owner}"
+  instance_id       = "${var.instance_id}"
+  retention_days    = "14"
 }
 ```
 
@@ -37,14 +37,9 @@ module "lambda_ami_backup" {
 | name                         | ``             | Name  (e.g. `bastion` or `db`)                           | Yes      |
 | region                       | ``             | AWS Region where module should operate (e.g. `us-east-1`)| Yes      |
 | ami_owner                    | ``             | AWS Account ID which is used as a filter for AMI list (e.g. `123456789012`)| Yes      |
+| instance_id                  | ``             | AWS Instance ID which is used for creating the AMI image (e.g. `id-123456789012`)| Yes      |
+| retention_days               | `14`           | Is the number of days you want to keep the backups for (e.g. `14`)| No     |
 | backup_schedule              | `cron(00 19 * * ? *)` | The scheduling expression. (e.g. cron(0 20 * * ? *) or rate(5 minutes) | No       |
 | cleanup_schedule             | `cron(05 19 * * ? *)` | The scheduling expression. (e.g. cron(0 20 * * ? *) or rate(5 minutes) | No       |
 
 
-## Configuring your instances to be backed up
-
-Tag any instances you want to be backed up with `Snapshot = true`.
-
-By default, old backups will be removed after 7 days, to keep them longer, set
-another tag: `Retention = 14`, where 14 is the number of days you want to keep
-the backups for.
