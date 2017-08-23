@@ -16,7 +16,11 @@ variable "region" {
   default = ""
 }
 
-variable "retention" {
+variable "retention_days" {
+  default = ""
+}
+
+variable "instance_id" {
   default = ""
 }
 

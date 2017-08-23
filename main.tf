@@ -121,9 +121,9 @@ resource "aws_lambda_function" "ami_cleanup" {
 
   environment = {
     variables = {
-      region      = "${var.region}"
-      ami_owner   = "${var.ami_owner}"
-      label_id    = "${module.label.id}"
+      region    = "${var.region}"
+      ami_owner = "${var.ami_owner}"
+      label_id  = "${module.label.id}"
     }
   }
 }
