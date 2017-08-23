@@ -32,7 +32,9 @@ data "aws_iam_policy_document" "ami_backup" {
       "ec2:DescribeInstances",
       "ec2:CreateImage",
       "ec2:DescribeImages",
+      "ec2:DeregisterImage",
       "ec2:DescribeSnapshots",
+      "ec2:DeleteSnapshot",
       "ec2:CreateTags",
     ]
 

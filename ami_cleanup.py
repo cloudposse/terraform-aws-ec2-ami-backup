@@ -2,7 +2,7 @@
 #
 # @author Robert Kozora <bobby@kozora.me>
 #
-# This script will search for all instances having a tag with "ami_delete_on"
+# This script will search for all instances having a tag with "AMIDeleteOn"
 # on it. As soon as we have the instances list, we loop through each instance
 # and reference the AMIs of that instance. We check that the latest daily backup
 # succeeded then we store every image that's reached its DeleteOn tag's date for
@@ -27,26 +27,11 @@ import sys
 
 ec = boto3.client('ec2', os.environ['region'])
 ec2 = boto3.resource('ec2', os.environ['region'])
-images = ec2.images.filter(Owners=[os.environ['ami_owner']])
+images = ec2.images.filter(Owners=[os.environ['ami_owner']],  Filters=[{'Name': 'tag-key', 'Values': ['AMIDeleteOn']}])
 label_id = os.environ['label_id']
 
 
 def lambda_handler(event, context):
-    reservations = ec.describe_instances(
-        Filters=[
-            {'Name': 'tag-key', 'Values': ['ami_delete_on', 'Backup', 'Snapshot']},
-        ]
-    ).get(
-        'Reservations', []
-    )
-
-    instances = sum(
-        [
-            [i for i in r['Instances']]
-            for r in reservations
-        ], [])
-
-    print("Found %d instances that need evaluated" % len(instances))
 
     to_tag = collections.defaultdict(list)
 
@@ -59,47 +44,52 @@ def lambda_handler(event, context):
     backupSuccess = False
 
     # Loop through all of our instances with a tag named "Backup"
-    for instance in instances:
-        imagecount = 0
 
-        # Loop through each image of our current instance
-        for image in images:
+    imagecount = 0
 
-            # Our other Lambda Function names its AMIs label_id - i-instancenumber.
-            # We now know these images are auto created
-            if image.name.startswith(label_id + '-' + instance['InstanceId']):
+    # Loop through each image of our current instance
+    for image in images:
 
-                # print "FOUND IMAGE " + image.id + " FOR INSTANCE " + instance['InstanceId']
+        try:
+            if image.tags is not None:
+                deletion_date = [
+                    t.get('Value') for t in image.tags
+                    if t['Key'] == 'AMIDeleteOn'][0]
+                delete_date = time.strptime(deletion_date, "%m-%d-%Y")
+        except IndexError:
+            deletion_date = False
+            delete_date = False
 
-                # Count this image's occcurance
-                imagecount = imagecount + 1
+        # Our other Lambda Function names its AMIs label_id-
+        # We now know these images are auto created
+        if image.name.startswith(label_id + '-'):
 
-                try:
-                    if image.tags is not None:
-                        deletion_date = [
-                            t.get('Value') for t in image.tags
-                            if t['Key'] == 'ami_delete_on'][0]
-                        delete_date = time.strptime(deletion_date, "%m-%d-%Y")
-                except IndexError:
-                    deletion_date = False
-                    delete_date = False
+            # Count this image's occcurance
+            imagecount = imagecount + 1
 
-                today_time = datetime.datetime.now().strftime('%m-%d-%Y')
-                # today_fmt = today_time.strftime('%m-%d-%Y')
-                today_date = time.strptime(today_time, '%m-%d-%Y')
+            try:
+                if image.tags is not None:
+                    deletion_date = [
+                        t.get('Value') for t in image.tags
+                        if t['Key'] == 'AMIDeleteOn'][0]
+                    delete_date = time.strptime(deletion_date, "%m-%d-%Y")
+            except IndexError:
+                deletion_date = False
+                delete_date = False
 
-                # If image's DeleteOn date is less than or equal to today,
-                # add this image to our list of images to process later
-                if delete_date <= today_date:
-                    imagesList.append(image.id)
+            today_time = datetime.datetime.now().strftime('%m-%d-%Y')
+            # today_fmt = today_time.strftime('%m-%d-%Y')
+            today_date = time.strptime(today_time, '%m-%d-%Y')
 
-                # Make sure we have an AMI from today and mark backupSuccess as true
-                if image.name.endswith(date_fmt):
-                    # Our latest backup from our other Lambda Function succeeded
-                    backupSuccess = True
-                    print("Latest backup from " + date_fmt + " was a success")
+            # If image's DeleteOn date is less than or equal to today,
+            # add this image to our list of images to process later
+            if delete_date <= today_date:
+                imagesList.append(image.id)
 
-        print("instance " + instance['InstanceId'] + " has " + str(imagecount) + " AMIs")
+            # Make sure we have an AMI from today and mark backupSuccess as true
+            if image.name.endswith(date_fmt):
+                # Our latest backup from our other Lambda Function succeeded
+                backupSuccess = True
 
     print("=============")
 
