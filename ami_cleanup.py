@@ -27,12 +27,13 @@ import sys
 
 ec = boto3.client('ec2', os.environ['region'])
 ec2 = boto3.resource('ec2', os.environ['region'])
-images = ec2.images.filter(Owners=[os.environ['ami_owner']],  Filters=[{'Name': 'tag-key', 'Values': ['AMIDeleteOn']}])
-label_id = os.environ['label_id']
+images = ec2.images.filter(Owners=[os.environ['ami_owner']],
+                           Filters=[{'Name': 'tag-key', 'Values': ['AMIDeleteOn']}])
 
+label_id = os.environ['label_id']
+instance_id = os.environ['instance_id']
 
 def lambda_handler(event, context):
-
     to_tag = collections.defaultdict(list)
 
     date = datetime.datetime.now()
@@ -62,9 +63,9 @@ def lambda_handler(event, context):
 
         # Our other Lambda Function names its AMIs label_id-
         # We now know these images are auto created
-        if image.name.startswith(label_id + '-'):
+        if image.name.startswith(label_id + '-' + instance_id):
 
-            # Count this image's occcurance
+            # Count this image's occurance
             imagecount = imagecount + 1
 
             try:

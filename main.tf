@@ -67,23 +67,31 @@ module "label_backup" {
   source    = "git::https://github.com/cloudposse/tf_label.git?ref=tags/0.1.0"
   namespace = "${var.namespace}"
   stage     = "${var.stage}"
-  name      = "${var.name}-backup"
+  name      = "${var.name}-backup-${var.instance_id}"
 }
 
 module "label_cleanup" {
   source    = "git::https://github.com/cloudposse/tf_label.git?ref=tags/0.1.0"
   namespace = "${var.namespace}"
   stage     = "${var.stage}"
-  name      = "${var.name}-cleanup"
+  name      = "${var.name}-cleanup-${var.instance_id}"
 }
 
+module "label_role" {
+  source    = "git::https://github.com/cloudposse/tf_label.git?ref=tags/0.1.0"
+  namespace = "${var.namespace}"
+  stage     = "${var.stage}"
+  name      = "${var.name}-${var.instance_id}"
+}
+
+
 resource "aws_iam_role" "ami_backup" {
-  name               = "${module.label.id}"
+  name               = "${module.label_role.id}"
   assume_role_policy = "${data.aws_iam_policy_document.default.json}"
 }
 
 resource "aws_iam_role_policy" "ami_backup" {
-  name   = "${module.label.id}"
+  name   = "${module.label_role.id}"
   role   = "${aws_iam_role.ami_backup.id}"
   policy = "${data.aws_iam_policy_document.ami_backup.json}"
 }
@@ -91,7 +99,7 @@ resource "aws_iam_role_policy" "ami_backup" {
 resource "aws_lambda_function" "ami_backup" {
   filename         = "${path.module}/ami_backup.zip"
   function_name    = "${module.label_backup.id}"
-  description      = "Automatically backup EC2 instance ${var.instance_id} (create AMI)"
+  description      = "Automatically backup EC2 instance (create AMI)"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "ami_backup.lambda_handler"
@@ -112,7 +120,7 @@ resource "aws_lambda_function" "ami_backup" {
 resource "aws_lambda_function" "ami_cleanup" {
   filename         = "${path.module}/ami_cleanup.zip"
   function_name    = "${module.label_cleanup.id}"
-  description      = "Cleanup old AMI backups"
+  description      = "Automatically removal AMI images of EC2 instance (remove AMI)"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "ami_cleanup.lambda_handler"
@@ -123,6 +131,7 @@ resource "aws_lambda_function" "ami_cleanup" {
     variables = {
       region    = "${var.region}"
       ami_owner = "${var.ami_owner}"
+      instance_id = "${var.instance_id}"
       label_id  = "${module.label.id}"
     }
   }
@@ -167,3 +176,4 @@ resource "aws_lambda_permission" "ami_cleanup" {
   principal     = "events.amazonaws.com"
   source_arn    = "${aws_cloudwatch_event_rule.ami_cleanup.arn}"
 }
+
