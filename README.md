@@ -17,8 +17,7 @@ Notes:
 
 ```
 module "lambda_ami_backup" {
-  source = "git::https://github.com/cloudposse/tf_lambda_ami_backup.git?ref=master"
-
+  source            = "git::https://github.com/cloudposse/tf_lambda_ami_backup.git?ref=master"
   name              = "${var.name}"
   stage             = "${var.stage}"
   namespace         = "${var.namespace}"

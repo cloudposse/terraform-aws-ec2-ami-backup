@@ -120,7 +120,7 @@ resource "aws_lambda_function" "ami_backup" {
 resource "aws_lambda_function" "ami_cleanup" {
   filename         = "${path.module}/ami_cleanup.zip"
   function_name    = "${module.label_cleanup.id}"
-  description      = "Automatically removal AMI images of EC2 instance (remove AMI)"
+  description      = "Automatically remove AMIs that have expired (delete AMI)"
   role             = "${aws_iam_role.ami_backup.arn}"
   timeout          = 60
   handler          = "ami_cleanup.lambda_handler"
