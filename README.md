@@ -1,7 +1,5 @@
 # Terraform module for automatic AMI creation
 
-**WARNING!** AMI cleanup works not yet.
-
 This repo contains a terraform module that creates two lambda functions
 that will create AMI automatically at regular intervals. It is based on
 the code at

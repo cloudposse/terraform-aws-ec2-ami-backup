@@ -2,21 +2,13 @@
 #
 # @author Robert Kozora <bobby@kozora.me>
 #
-# This script will search for all instances having a tag with "AMIDeleteOn"
-# on it. As soon as we have the instances list, we loop through each instance
-# and reference the AMIs of that instance. We check that the latest daily backup
+# This script will search for all AMIs having a tag with "AMIDeleteOn"
+# on it. As soon as we have the AMIs list, we loop through each images
+# and reference the AMIs. We check that the latest daily backup
 # succeeded then we store every image that's reached its DeleteOn tag's date for
-# deletion. We then loop through the AMIs, deregister them and remove all the
-# snapshots associated withg that AMI.
+# deletion. We loop through the AMIs, deregister them and remove all the
+# snapshots associated with that AMI.
 
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
 from __future__ import print_function
 import boto3
 import collections
@@ -44,11 +36,7 @@ def lambda_handler(event, context):
     # Set to true once we confirm we have a backup taken today
     backupSuccess = False
 
-    # Loop through all of our instances with a tag named "Backup"
-
-    imagecount = 0
-
-    # Loop through each image of our current instance
+    # Loop through each image
     for image in images:
 
         try:
@@ -65,9 +53,6 @@ def lambda_handler(event, context):
         # We now know these images are auto created
         if image.name.startswith(label_id + '-' + instance_id):
 
-            # Count this image's occurance
-            imagecount = imagecount + 1
-
             try:
                 if image.tags is not None:
                     deletion_date = [
@@ -79,7 +64,6 @@ def lambda_handler(event, context):
                 delete_date = False
 
             today_time = datetime.datetime.now().strftime('%m-%d-%Y')
-            # today_fmt = today_time.strftime('%m-%d-%Y')
             today_date = time.strptime(today_time, '%m-%d-%Y')
 
             # If image's DeleteOn date is less than or equal to today,
