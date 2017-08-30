@@ -136,8 +136,8 @@ resource "aws_lambda_function" "ami_cleanup" {
   }
 }
 
-data "null_data_source" "schedule" {
-  inputs = {
+resource "null_resource" "schedule" {
+  triggers = {
     backup  = "${var.backup_schedule}"
     cleanup = "${var.cleanup_schedule}"
   }
@@ -146,15 +146,15 @@ data "null_data_source" "schedule" {
 resource "aws_cloudwatch_event_rule" "ami_backup" {
   name                = "${module.label_backup.id}"
   description         = "Schedule for AMI snapshot backups"
-  schedule_expression = "${data.null_data_source.schedule.inputs.backup}"
-  depends_on          = ["data.null_data_source.schedule"]
+  schedule_expression = "${null_resource.schedule.triggers.backup}"
+  depends_on          = ["null_resource.schedule"]
 }
 
 resource "aws_cloudwatch_event_rule" "ami_cleanup" {
   name                = "${module.label_cleanup.id}"
   description         = "Schedule for AMI snapshot cleanup"
-  schedule_expression = "${data.null_data_source.schedule.inputs.backup}"
-  depends_on          = ["data.null_data_source.schedule"]
+  schedule_expression = "${null_resource.schedule.triggers.backup}"
+  depends_on          = ["null_resource.schedule"]
 }
 
 resource "aws_cloudwatch_event_target" "ami_backup" {
