@@ -84,7 +84,6 @@ module "label_role" {
   name      = "${var.name}-${var.instance_id}"
 }
 
-
 resource "aws_iam_role" "ami_backup" {
   name               = "${module.label_role.id}"
   assume_role_policy = "${data.aws_iam_policy_document.default.json}"
@@ -129,24 +128,33 @@ resource "aws_lambda_function" "ami_cleanup" {
 
   environment = {
     variables = {
-      region    = "${var.region}"
-      ami_owner = "${var.ami_owner}"
+      region      = "${var.region}"
+      ami_owner   = "${var.ami_owner}"
       instance_id = "${var.instance_id}"
-      label_id  = "${module.label.id}"
+      label_id    = "${module.label.id}"
     }
+  }
+}
+
+data "null_data_source" "schedule" {
+  inputs = {
+    backup  = "${var.backup_schedule}"
+    cleanup = "${var.cleanup_schedule}"
   }
 }
 
 resource "aws_cloudwatch_event_rule" "ami_backup" {
   name                = "${module.label_backup.id}"
   description         = "Schedule for AMI snapshot backups"
-  schedule_expression = "${var.backup_schedule}"
+  schedule_expression = "${data.null_data_source.schedule.inputs.backup}"
+  depends_on          = ["data.null_data_source.schedule"]
 }
 
 resource "aws_cloudwatch_event_rule" "ami_cleanup" {
   name                = "${module.label_cleanup.id}"
   description         = "Schedule for AMI snapshot cleanup"
-  schedule_expression = "${var.cleanup_schedule}"
+  schedule_expression = "${data.null_data_source.schedule.inputs.backup}"
+  depends_on          = ["data.null_data_source.schedule"]
 }
 
 resource "aws_cloudwatch_event_target" "ami_backup" {
@@ -176,4 +184,3 @@ resource "aws_lambda_permission" "ami_cleanup" {
   principal     = "events.amazonaws.com"
   source_arn    = "${aws_cloudwatch_event_rule.ami_cleanup.arn}"
 }
-
