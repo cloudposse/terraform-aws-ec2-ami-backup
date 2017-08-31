@@ -153,7 +153,7 @@ resource "aws_cloudwatch_event_rule" "ami_backup" {
 resource "aws_cloudwatch_event_rule" "ami_cleanup" {
   name                = "${module.label_cleanup.id}"
   description         = "Schedule for AMI snapshot cleanup"
-  schedule_expression = "${null_resource.schedule.triggers.backup}"
+  schedule_expression = "${null_resource.schedule.triggers.cleanup}"
   depends_on          = ["null_resource.schedule"]
 }
 
