@@ -2,7 +2,7 @@
 #
 # @author Robert Kozora <bobby@kozora.me>
 #
-# This script will search for all AMIs having a tag with "AMIDeleteOn"
+# This script will search for all AMIs having a tag with "DeleteOn"
 # on it. As soon as we have the AMIs list, we loop through each images
 # and reference the AMIs. We check that the latest daily backup
 # succeeded then we store every image that's reached its DeleteOn tag's date for
@@ -20,7 +20,7 @@ import sys
 ec = boto3.client('ec2', os.environ['region'])
 ec2 = boto3.resource('ec2', os.environ['region'])
 images = ec2.images.filter(Owners=[os.environ['ami_owner']],
-                           Filters=[{'Name': 'tag-key', 'Values': ['AMIDeleteOn']}])
+                           Filters=[{'Name': 'tag-key', 'Values': ['DeleteOn']}])
 
 label_id = os.environ['label_id']
 instance_id = os.environ['instance_id']
@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             if image.tags is not None:
                 deletion_date = [
                     t.get('Value') for t in image.tags
-                    if t['Key'] == 'AMIDeleteOn'][0]
+                    if t['Key'] == 'DeleteOn'][0]
                 delete_date = time.strptime(deletion_date, "%m-%d-%Y")
         except IndexError:
             deletion_date = False
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
                 if image.tags is not None:
                     deletion_date = [
                         t.get('Value') for t in image.tags
-                        if t['Key'] == 'AMIDeleteOn'][0]
+                        if t['Key'] == 'DeleteOn'][0]
                     delete_date = time.strptime(deletion_date, "%m-%d-%Y")
             except IndexError:
                 deletion_date = False

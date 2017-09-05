@@ -5,8 +5,8 @@
 # "retention_days" is environment variable which will be used as a retention policy number in days. If there is no
 # environment variable with that name, it will use a 14 days default value for each AMI.
 #
-# After creating the AMI it creates a "AMIDeleteOn" tag on the AMI indicating when
-# it will be deleted using the Retention value and another Lambda function 
+# After creating the AMI it creates a "DeleteOn" tag on the AMI indicating when
+# it will be deleted using the Retention value and another Lambda function
 
 from __future__ import print_function
 import boto3
@@ -46,6 +46,6 @@ def lambda_handler(event, context):
     ec.create_tags(
         Resources=[ec2_instance_id, AMIid['ImageId']],
         Tags=[
-            {'Key': 'AMIDeleteOn', 'Value': delete_fmt},
+            {'Key': 'DeleteOn', 'Value': delete_fmt},
         ]
     )
