@@ -44,7 +44,7 @@ def lambda_handler(event, context):
     delete_fmt = delete_date.strftime('%m-%d-%Y')
 
     ec.create_tags(
-        Resources=[ec2_instance_id, AMIid['ImageId']],
+        Resources=[AMIid['ImageId']],
         Tags=[
             {'Key': 'DeleteOn', 'Value': delete_fmt},
         ]
