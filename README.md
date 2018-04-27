@@ -39,4 +39,4 @@ module "lambda_ami_backup" {
 | retention_days               | `14`           | Is the number of days you want to keep the backups for (e.g. `14`)| No     |
 | backup_schedule              | `cron(00 19 * * ? *)` | The scheduling expression. (e.g. cron(0 20 * * ? *) or rate(5 minutes) | No       |
 | cleanup_schedule             | `cron(05 19 * * ? *)` | The scheduling expression. (e.g. cron(0 20 * * ? *) or rate(5 minutes) | No       |
-| reboot                       | `false`        | Should the machine be rebooted as part of the snapshot?  | No       |
+| no_reboot                    | `true`         | Don't reboot the machine as part of the snapshot process | No       |
