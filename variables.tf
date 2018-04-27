@@ -31,3 +31,7 @@ variable "namespace" {
 variable "stage" {
   default = ""
 }
+
+variable "no_reboot" {
+  default = "true"
+}
