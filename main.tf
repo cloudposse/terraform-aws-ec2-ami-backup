@@ -112,7 +112,7 @@ resource "aws_lambda_function" "ami_backup" {
       instance_id = "${var.instance_id}"
       retention   = "${var.retention_days}"
       label_id    = "${module.label.id}"
-      no_reboot   = "${var.no_reboot}"
+      reboot      = "${var.reboot ? "1" : "0"}"
     }
   }
 }
