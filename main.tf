@@ -107,12 +107,13 @@ resource "aws_lambda_function" "ami_backup" {
 
   environment = {
     variables = {
-      region      = "${var.region}"
-      ami_owner   = "${var.ami_owner}"
-      instance_id = "${var.instance_id}"
-      retention   = "${var.retention_days}"
-      label_id    = "${module.label.id}"
-      reboot      = "${var.reboot ? "1" : "0"}"
+      region                = "${var.region}"
+      ami_owner             = "${var.ami_owner}"
+      instance_id           = "${var.instance_id}"
+      retention             = "${var.retention_days}"
+      label_id              = "${module.label.id}"
+      reboot                = "${var.reboot ? "1" : "0"}"
+      block_device_mappings = "${jsonencode(var.block_device_mappings)}"
     }
   }
 }

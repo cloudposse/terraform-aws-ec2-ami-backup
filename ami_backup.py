@@ -15,11 +15,13 @@ import datetime
 import sys
 import pprint
 import os
+import json
 
 ec = boto3.client('ec2')
 ec2_instance_id = os.environ['instance_id']
 label_id = os.environ['label_id']
 no_reboot = os.environ['reboot'] == '0'
+block_device_mappings = json.loads(str(os.environ['block_device_mappings']))
 
 def lambda_handler(event, context):
     try:
@@ -31,7 +33,8 @@ def lambda_handler(event, context):
     AMIid = ec.create_image(InstanceId=ec2_instance_id,
                             Name=label_id + "-" + ec2_instance_id + "-" + create_fmt,
                             Description=label_id + "-" + ec2_instance_id + "-" + create_fmt,
-                            NoReboot=no_reboot, DryRun=False)
+                            NoReboot=no_reboot, DryRun=False,
+                            BlockDeviceMappings=block_device_mappings)
 
     print("Retaining AMI %s of instance %s for %d days" % (
         AMIid['ImageId'],

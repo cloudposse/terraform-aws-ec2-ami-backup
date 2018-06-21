@@ -20,6 +20,11 @@ variable "retention_days" {}
 
 variable "instance_id" {}
 
+variable "block_device_mappings" {
+  type    = "list"
+  default = []
+}
+
 variable "name" {
   default = ""
 }
