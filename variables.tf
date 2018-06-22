@@ -21,8 +21,9 @@ variable "retention_days" {}
 variable "instance_id" {}
 
 variable "block_device_mappings" {
-  type    = "list"
-  default = []
+  description = "List of block device mappings to be included/excluded from created AMIs"
+  type        = "list"
+  default     = []
 }
 
 variable "name" {
