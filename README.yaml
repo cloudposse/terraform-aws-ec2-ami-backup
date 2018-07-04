@@ -1,0 +1,108 @@
+---
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: terraform-aws-ec2-ami-backup
+
+# Logo for this project
+#logo: docs/logo.png
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: cloudposse/terraform-aws-ec2-ami-backup
+
+# Badges to display
+badges:
+  - name: "Build Status"
+    image: "https://travis-ci.org/cloudposse/terraform-aws-ec2-ami-backup.svg?branch=master"
+    url: "https://travis-ci.org/cloudposse/terraform-aws-ec2-ami-backup"
+  - name: "Latest Release"
+    image: "https://img.shields.io/github/release/cloudposse/terraform-aws-ec2-ami-backup.svg"
+    url: "https://travis-ci.org/cloudposse/terraform-aws-ec2-ami-backup/releases"
+  - name: "Slack Community"
+    image: "https://slack.cloudposse.com/badge.svg"
+    url: "https://slack.cloudposse.com"
+
+related:
+  - name: "terraform-aws-ec2-ami-snapshot"
+    description: "Terraform module to easily generate AMI snapshots to create replica instances"
+    url: "https://github.com/cloudposse/terraform-aws-ec2-ami-snapshot"
+  - name: "terraform-aws-efs-backup"
+    description: "Terraform module designed to easily backup EFS filesystems to S3 using DataPipeline"
+    url: "https://github.com/cloudposse/terraform-aws-efs-backup"
+
+    
+# Short description of this project
+description: |-
+  This repo contains a terraform module that creates two lambda functions
+  that will create AMI automatically at regular intervals. It is based on
+  the code at
+  <https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/> and
+  <https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups-2/>.
+
+# How to use this project
+usage: |-
+  Include this repository as a module in your existing terraform code:
+
+  ```
+  module "lambda_ami_backup" {
+    source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=tags/0.1.0"
+
+    name           = "${var.name}"
+    stage          = "${var.stage}"
+    namespace      = "${var.namespace}"
+    region         = "${var.region}"
+    ami_owner      = "${var.ami_owner}"
+    instance_id    = "${var.instance_id}"
+    retention_days = "14"
+  }
+  ```
+
+examples: |-
+  Example on excluding some of attached EBS volumes:
+  ```
+  module "lambda_ami_backup" {
+    source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=tags/0.1.0"
+
+    name           = "${var.name}"
+    stage          = "${var.stage}"
+    namespace      = "${var.namespace}"
+    region         = "${var.region}"
+    ami_owner      = "${var.ami_owner}"
+    instance_id    = "${var.instance_id}"
+    retention_days = "14"
+
+    block_device_mappings = [
+      { "DeviceName" = "/dev/xvdf", "NoDevice" = "" },
+      { "DeviceName" = "/dev/xvdg", "NoDevice" = "" },
+    ]
+  }
+  ```
+
+include:
+  - "docs/targets.md"
+  - "docs/terraform.md"
+
+# Contributors to this project
+contributors:
+  - name: "Sergey Vasilyev"
+    github: "s2504s"
+  - name: "Mark Harrison"
+    github: "mivok"
+  - name: "Vladimir"
+    github: "SweetOps"
+  - name: "Tron Thongsringklee"
+    github: "thanandorn"
+  - name: "Raymond Butcher"
+    github: "raymondbutcher"
+  - name: "Anthony DeMartini"
+    github: "ademartini"
+  - name: "Konstantin B"
+    github: "comeanother"
+  - name: "Seth Chisamore"
+    github: "schisamo"  

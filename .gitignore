@@ -6,3 +6,6 @@
 .terraform/
 *.zip
 .idea/
+
+.build-harness
+build-harness
