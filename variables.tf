@@ -37,7 +37,7 @@ variable "block_device_mappings" {
 
 variable "name" {
   default     = ""
-  description = "Name  (e.g. `bastion` or `db`"
+  description = "Name  (e.g. `bastion` or `db`)"
 }
 
 variable "namespace" {
@@ -46,7 +46,7 @@ variable "namespace" {
 }
 
 variable "stage" {
-  default     = "Stage (e.g. `prod`, `dev`, `staging`"
+  default     = "Stage (e.g. `prod`, `dev`, `staging`)"
   description = ""
 }
 
