@@ -46,8 +46,8 @@ variable "namespace" {
 }
 
 variable "stage" {
-  default     = "Stage (e.g. `prod`, `dev`, `staging`)"
-  description = ""
+  default     = ""
+  description = "Stage (e.g. `prod`, `dev`, `staging`)"
 }
 
 variable "reboot" {
