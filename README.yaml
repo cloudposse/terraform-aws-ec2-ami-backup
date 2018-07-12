@@ -11,7 +11,12 @@ name: terraform-aws-ec2-ami-backup
 #logo: docs/logo.png
 
 # License of this project
-license: "APACHE2"
+license: "MIT"
+
+copyrights:
+  - name: "Chef Software, Inc"
+    url: "https://www.chef.io/"
+    year: "2016"
 
 # Canonical GitHub repo
 github_repo: cloudposse/terraform-aws-ec2-ami-backup
@@ -83,6 +88,11 @@ examples: |-
     ]
   }
   ```
+
+references:
+- name: "Terraform config for automatic EBS snapshots"
+  description: "This repo contains a terraform configuration that creates two lambda functions that will take automatic EBS snapshots at regular intervals."
+  url: "https://github.com/chef/lambda_ebs_snapshot"
 
 include:
   - "docs/targets.md"
