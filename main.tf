@@ -47,13 +47,13 @@ data "aws_iam_policy_document" "ami_backup" {
 data "archive_file" "ami_backup" {
   type        = "zip"
   source_file = "${path.module}/ami_backup.py"
-  output_path = "${path.module}/ami_backup.zip"
+  output_path = ".terraform/terraform-aws-ec2-ami-backup/backup-${md5(file("${path.module}/ami_backup.py"))}.zip"
 }
 
 data "archive_file" "ami_cleanup" {
   type        = "zip"
   source_file = "${path.module}/ami_cleanup.py"
-  output_path = "${path.module}/ami_cleanup.zip"
+  output_path = ".terraform/terraform-aws-ec2-ami-backup/cleanup-${md5(file("${path.module}/ami_cleanup.py"))}.zip"
 }
 
 module "label" {
@@ -96,7 +96,7 @@ resource "aws_iam_role_policy" "ami_backup" {
 }
 
 resource "aws_lambda_function" "ami_backup" {
-  filename         = "${path.module}/ami_backup.zip"
+  filename         = "${data.archive_file.ami_backup.output_path}"
   function_name    = "${module.label_backup.id}"
   description      = "Automatically backup EC2 instance (create AMI)"
   role             = "${aws_iam_role.ami_backup.arn}"
@@ -119,7 +119,7 @@ resource "aws_lambda_function" "ami_backup" {
 }
 
 resource "aws_lambda_function" "ami_cleanup" {
-  filename         = "${path.module}/ami_cleanup.zip"
+  filename         = "${data.archive_file.ami_cleanup.output_path}"
   function_name    = "${module.label_cleanup.id}"
   description      = "Automatically remove AMIs that have expired (delete AMI)"
   role             = "${aws_iam_role.ami_backup.arn}"
