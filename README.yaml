@@ -11,7 +11,7 @@ name: terraform-aws-ec2-ami-backup
 #logo: docs/logo.png
 
 # License of this project
-license: "APACHE2"
+license: "MIT"
 
 copyrights:
   - name: "Chef Software, Inc"
