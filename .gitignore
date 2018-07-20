@@ -3,9 +3,10 @@
 *.tfstate.backup
 
 # Module directory
-.terraform/
+.terraform
 *.zip
-.idea/
+.idea
+*.iml
 
 .build-harness
 build-harness

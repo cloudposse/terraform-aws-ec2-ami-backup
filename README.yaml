@@ -54,9 +54,9 @@ description: |-
 usage: |-
   Include this repository as a module in your existing terraform code:
 
-  ```
+  ```hcl
   module "lambda_ami_backup" {
-    source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=tags/0.1.0"
+    source = "git::https://github.com/cloudposse/terraform-aws-ec2-ami-backup.git?ref=tags/0.3.2"
 
     name           = "${var.name}"
     stage          = "${var.stage}"
@@ -70,9 +70,10 @@ usage: |-
 
 examples: |-
   Example on excluding some of attached EBS volumes:
-  ```
+
+  ```hcl
   module "lambda_ami_backup" {
-    source = "git::https://github.com/cloudposse/tf_ami_backup.git?ref=tags/0.1.0"
+    source = "git::https://github.com/cloudposse/terraform-aws-ec2-ami-backup.git?ref=tags/0.3.2"
 
     name           = "${var.name}"
     stage          = "${var.stage}"
