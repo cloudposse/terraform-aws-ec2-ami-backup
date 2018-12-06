@@ -7,6 +7,23 @@
 # Name of this project
 name: terraform-aws-ec2-ami-backup
 
+# Tags of this project
+tags:
+  - aws
+  - terraform
+  - terraform-modules
+  - backups
+  - aws-lambda
+  - ami
+  - scheduled-events
+  - cronjob
+  - snapshot
+  - ebs
+
+# Categories of this project
+categories:
+  - terraform-modules/backups
+
 # Logo for this project
 #logo: docs/logo.png
 
