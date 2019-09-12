@@ -1,5 +1,5 @@
 locals {
-  module_relpath = substr(path.module, length(path.cwd) + 1, -1)
+  module_relpath = path.module
 }
 
 data "aws_iam_policy_document" "default" {
