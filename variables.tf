@@ -31,7 +31,7 @@ variable "instance_id" {
 
 variable "block_device_mappings" {
   description = "List of block device mappings to be included/excluded from created AMIs. With default value of [], AMIs will include all attached EBS volumes "
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
