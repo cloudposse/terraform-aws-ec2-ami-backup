@@ -61,28 +61,28 @@ data "archive_file" "ami_cleanup" {
 }
 
 module "label" {
-  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
+  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=0.25.0"
   namespace = var.namespace
   stage     = var.stage
   name      = var.name
 }
 
 module "label_backup" {
-  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
+  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=0.25.0"
   namespace = var.namespace
   stage     = var.stage
   name      = "${var.name}-backup-${var.instance_id}"
 }
 
 module "label_cleanup" {
-  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
+  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=0.25.0"
   namespace = var.namespace
   stage     = var.stage
   name      = "${var.name}-cleanup-${var.instance_id}"
 }
 
 module "label_role" {
-  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
+  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=0.25.0"
   namespace = var.namespace
   stage     = var.stage
   name      = "${var.name}-${var.instance_id}"
