@@ -15,10 +15,10 @@ No requirements.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_label"></a> [label](#module\_label) | git::https://github.com/cloudposse/terraform-null-label.git | tags/0.3.7 |
-| <a name="module_label_backup"></a> [label\_backup](#module\_label\_backup) | git::https://github.com/cloudposse/terraform-null-label.git | tags/0.3.7 |
-| <a name="module_label_cleanup"></a> [label\_cleanup](#module\_label\_cleanup) | git::https://github.com/cloudposse/terraform-null-label.git | tags/0.3.7 |
-| <a name="module_label_role"></a> [label\_role](#module\_label\_role) | git::https://github.com/cloudposse/terraform-null-label.git | tags/0.3.7 |
+| <a name="module_label"></a> [label](#module\_label) | git::https://github.com/cloudposse/terraform-null-label.git | 0.25.0 |
+| <a name="module_label_backup"></a> [label\_backup](#module\_label\_backup) | git::https://github.com/cloudposse/terraform-null-label.git | 0.25.0 |
+| <a name="module_label_cleanup"></a> [label\_cleanup](#module\_label\_cleanup) | git::https://github.com/cloudposse/terraform-null-label.git | 0.25.0 |
+| <a name="module_label_role"></a> [label\_role](#module\_label\_role) | git::https://github.com/cloudposse/terraform-null-label.git | 0.25.0 |
 
 ## Resources
 
