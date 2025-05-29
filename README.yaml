@@ -47,7 +47,7 @@ badges:
     url: https://github.com/cloudposse/terraform-aws-ec2-ami-backup/commits
   - name: Slack Community
     image: https://slack.cloudposse.com/for-the-badge.svg
-    url: https://slack.cloudposse.com
+    url: https://cloudposse.com/slack
 
 # List any related terraform modules that this module may be used with or that this module depends on.
 related:
@@ -112,9 +112,5 @@ references:
     description: "This repo contains a terraform configuration that creates two lambda functions that will take automatic EBS snapshots at regular intervals."
     url: "https://github.com/chef/lambda_ebs_snapshot"
 
-include:
-  - "docs/targets.md"
-  - "docs/terraform.md"
-
-# Contributors to this project
+include: []
 contributors: []
